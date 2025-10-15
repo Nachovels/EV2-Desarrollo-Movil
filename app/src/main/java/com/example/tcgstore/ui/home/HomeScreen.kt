@@ -33,8 +33,12 @@ fun HomeScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            /*Hay que poiner un logo*/
-            Text(text = "Logo", modifier = Modifier.padding(bottom = 32.dp))
+
+            Image(painter = painterResource(id = R.drawable.tcgstore),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(200.dp)
+                        .padding(bottom = 32.dp))
             Button(
                 onClick = { /* Para logearse */ },
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
