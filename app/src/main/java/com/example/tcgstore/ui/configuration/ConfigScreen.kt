@@ -65,7 +65,6 @@ fun ConfigScreen(
                 .padding(paddingValues)
                 .padding(vertical = 16.dp)
         ) {
-            // Account Section
             SectionTitle("Cuenta")
             Column(Modifier.padding(horizontal = 16.dp)) {
                 Button(
@@ -78,7 +77,6 @@ fun ConfigScreen(
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // Appearance Section
             SectionTitle("Apariencia")
             SettingsRow(title = "Modo Oscuro") {
                 Switch(
@@ -90,7 +88,6 @@ fun ConfigScreen(
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // Notifications Section
             SectionTitle("Notificaciones")
             SettingsRow(title = "Recibir notificaciones") {
                 Switch(
@@ -102,7 +99,6 @@ fun ConfigScreen(
 
             Divider(modifier = Modifier.padding(vertical = 16.dp))
 
-            // Information Section
             SectionTitle("Información y Soporte")
             SettingsRow(title = "Acerca de", showArrow = true) {}
             SettingsRow(title = "Términos y Condiciones", showArrow = true) {}

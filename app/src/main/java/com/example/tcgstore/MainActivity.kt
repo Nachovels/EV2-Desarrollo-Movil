@@ -15,10 +15,15 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tcgstore.ui.admin.AgregarProductoScreen
+import com.example.tcgstore.ui.admin.AdminScreen
+import com.example.tcgstore.ui.admin.IntentoLoginScreen
+import com.example.tcgstore.ui.admin.UsuariosRegistradosScreen
 import com.example.tcgstore.ui.configuration.ConfigScreen
 import com.example.tcgstore.ui.home.HomeScreen
 import com.example.tcgstore.ui.login.LoginScreen
-import com.example.tcgstore.ui.registration.RegistrationScreen
+import com.example.tcgstore.ui.registration.RegistroScreen
+import com.example.tcgstore.ui.registration.RegistroExitosoScreen
 import com.example.tcgstore.ui.theme.TCGStoreTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,7 +52,12 @@ fun AppNavigation(isDarkMode: Boolean, onThemeUpdated: (Boolean) -> Unit) {
             "register",
             enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
-        ) { RegistrationScreen(navController = navController) }
+        ) { RegistroScreen(navController = navController) }
+        composable("registration_success") { RegistroExitosoScreen(navController = navController) }
+        composable("admin") { AdminScreen(navController = navController) }
+        composable("login_attempts") { IntentoLoginScreen(navController = navController) }
+        composable("registered_users") { UsuariosRegistradosScreen(navController = navController) }
+        composable("add_product") { AgregarProductoScreen(navController = navController) }
         composable("config") {
             ConfigScreen(
                 navController = navController,

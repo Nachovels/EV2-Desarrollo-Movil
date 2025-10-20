@@ -19,43 +19,65 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.tcgstore.data.User
+import com.example.tcgstore.data.UserStorage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen(navController: NavController) {
+fun RegistroScreen(navController: NavController) {
+    val context = LocalContext.current
+    val userStorage = UserStorage(context)
+    val scope = rememberCoroutineScope()
+
     var nombre by remember { mutableStateOf("") }
     var apellido by remember { mutableStateOf("") }
     var rut by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var direccion by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
+    var contrasena by remember { mutableStateOf("") }
 
     var isNombreError by remember { mutableStateOf(false) }
     var isApellidoError by remember { mutableStateOf(false) }
     var isRutError by remember { mutableStateOf(false) }
     var isCorreoError by remember { mutableStateOf(false) }
+    var isTelefonoError by remember { mutableStateOf(false) }
+    var isContrasenaError by remember { mutableStateOf(false) }
 
-    fun validateNombre(text: String) {
+    fun validarNombre(text: String) {
         isNombreError = text.any { it.isDigit() }
     }
 
-    fun validateApellido(text: String) {
+    fun validarApellido(text: String) {
         isApellidoError = text.any { it.isDigit() }
     }
 
-    fun validateRut(text: String) {
-        isRutError = !text.matches(Regex("^[0-9]{7,8}-[0-9kK]$|^[0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}-[0-9kK]$"))
+    fun validarRut(text: String) {
+        isRutError = !text.matches(Regex("^[0-9]{7,8}-[0-9kK]$|^[0-9]{1,2}\\.               [0-9]{3}\\.               [0-9]{3}-[0-9kK]$"))
     }
 
-    fun validateCorreo(text: String) {
+    fun validarCorreo(text: String) {
         isCorreoError = !Patterns.EMAIL_ADDRESS.matcher(text).matches()
     }
+
+    fun validarTelefono(text: String) {
+        isTelefonoError = !text.matches(Regex("^[0-9]{9}$"))
+    }
+
+    fun validarContrasena(text: String){
+        isContrasenaError = !text.matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-]).{8,}$"))
+    }
+
 
     Scaffold(
         topBar = {
@@ -81,7 +103,7 @@ fun RegistrationScreen(navController: NavController) {
                 value = nombre,
                 onValueChange = {
                     nombre = it
-                    validateNombre(it)
+                    validarNombre(it)
                 },
                 label = { Text("Nombre") },
                 isError = isNombreError,
@@ -91,7 +113,7 @@ fun RegistrationScreen(navController: NavController) {
                 value = apellido,
                 onValueChange = {
                     apellido = it
-                    validateApellido(it)
+                    validarApellido(it)
                 },
                 label = { Text("Apellido") },
                 isError = isApellidoError,
@@ -101,7 +123,7 @@ fun RegistrationScreen(navController: NavController) {
                 value = rut,
                 onValueChange = {
                     rut = it
-                    validateRut(it)
+                    validarRut(it)
                 },
                 label = { Text("RUT") },
                 isError = isRutError,
@@ -111,7 +133,7 @@ fun RegistrationScreen(navController: NavController) {
                 value = correo,
                 onValueChange = {
                     correo = it
-                    validateCorreo(it)
+                    validarCorreo(it)
                 },
                 label = { Text("Correo electrónico") },
                 isError = isCorreoError,
@@ -122,10 +144,36 @@ fun RegistrationScreen(navController: NavController) {
                 onValueChange = { direccion = it },
                 label = { Text("Dirección") }
             )
+
+            OutlinedTextField(
+                value = telefono,
+                onValueChange = { telefono = it
+                                validarTelefono(it)},
+                label = { Text("Teléfono") },
+                isError = isTelefonoError,
+                supportingText = { if (isTelefonoError) Text("Formato de teléfono no válido") else null }
+            )
+
+            OutlinedTextField(
+                value = contrasena,
+                onValueChange = { 
+                    contrasena = it
+                    validarContrasena(it)
+                },
+                label = { Text("Contraseña") },
+                isError = isContrasenaError,
+                supportingText = { if (isContrasenaError) Text("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial") else null }
+            )
             Button(
-                onClick = { /*Aqui se aprieta para poder registrar*/ },
-                enabled = !isNombreError && !isApellidoError && !isRutError && !isCorreoError &&
-                        nombre.isNotEmpty() && apellido.isNotEmpty() && rut.isNotEmpty() && correo.isNotEmpty() && direccion.isNotEmpty()
+                onClick = { 
+                    scope.launch {
+                        val user = User(nombre, apellido, rut, correo, direccion, telefono, contrasena)
+                        userStorage.saveUser(user)
+                        navController.navigate("registration_success")
+                    }
+                 },
+                enabled = !isNombreError && !isApellidoError && !isRutError && !isCorreoError && !isContrasenaError &&
+                        nombre.isNotEmpty() && apellido.isNotEmpty() && rut.isNotEmpty() && correo.isNotEmpty() && direccion.isNotEmpty() && contrasena.isNotEmpty()
             ) {
                 Text(text = "Registrarse")
             }
@@ -136,7 +184,7 @@ fun RegistrationScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun RegistrationScreenPreview() {
-    _root_ide_package_.com.example.tcgstore.ui.theme.TCGStoreTheme {
-        RegistrationScreen(rememberNavController())
+    com.example.tcgstore.ui.theme.TCGStoreTheme {
+        RegistroScreen(rememberNavController())
     }
 }
