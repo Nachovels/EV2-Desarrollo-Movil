@@ -1,14 +1,19 @@
 package com.example.tcgstore.ui.login
 
 import android.util.Patterns
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,10 +33,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.tcgstore.R
 import com.example.tcgstore.data.LoginAttempt
 import com.example.tcgstore.data.UserStorage
 import kotlinx.coroutines.launch
@@ -47,6 +57,8 @@ fun LoginScreen(navController: NavController){
 
     var correo by remember { mutableStateOf("") }
     var contraseña by remember { mutableStateOf("") }
+
+    var contrasenaVisible by remember { mutableStateOf(false) }
 
     var isCorreoError by remember { mutableStateOf(false) }
     var isContraseñaError by remember { mutableStateOf(false) }
@@ -72,6 +84,7 @@ fun LoginScreen(navController: NavController){
             )
         }
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,6 +93,12 @@ fun LoginScreen(navController: NavController){
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ){
+            Image(painter = painterResource(id = R.drawable.tcgstore),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(bottom = 32.dp))
+
             OutlinedTextField(
                 value = correo,
                 onValueChange = {
@@ -93,14 +112,23 @@ fun LoginScreen(navController: NavController){
             )
             OutlinedTextField(
                 value = contraseña,
-                onValueChange = { 
+                onValueChange = {
                     contraseña = it
                     validateContraseña(it)
                     loginError = null
                 },
                 label = { Text("Contraseña") },
                 isError = isContraseñaError,
-                supportingText = { if (isContraseñaError)  Text("Contraseña debe tener al menos 6 caracteres") else null }
+                supportingText = { if (isContraseñaError)  Text("Contraseña debe tener al menos 6 caracteres") else null },
+                visualTransformation = if (contrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (contrasenaVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (contrasenaVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                    IconButton(onClick = { contrasenaVisible = !contrasenaVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                }
             )
             loginError?.let {
                 Text(text = it)
@@ -118,11 +146,12 @@ fun LoginScreen(navController: NavController){
                     if (isAdmin) {
                         navController.navigate("admin")
                     } else if (isUser) {
-                        navController.navigate("home")
+                        navController.navigate("welcome")
                     } else {
                         loginError = "Correo o contraseña incorrectos"
                     }
                 }
+
              }) {
                 Text("Iniciar Sesión")
             }

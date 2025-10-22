@@ -18,6 +18,7 @@ class UserStorage(private val context: Context) {
     companion object {
         val USERS_KEY = stringPreferencesKey("users")
         val LOGIN_ATTEMPTS_KEY = stringPreferencesKey("login_attempts")
+        val PRODUCTS_KEY = stringPreferencesKey("products")
     }
 
     // USERS
@@ -32,7 +33,6 @@ class UserStorage(private val context: Context) {
                     mutableListOf()
                 }
             } catch (e: Exception) {
-                // If we fail to read/decode, start with a fresh list
                 mutableListOf()
             }
             users.add(user)
@@ -49,7 +49,6 @@ class UserStorage(private val context: Context) {
                 emptyList()
             }
         } catch (e: Exception) {
-            // If we fail to read/decode, return an empty list
             emptyList()
         }
     }
@@ -59,8 +58,6 @@ class UserStorage(private val context: Context) {
     suspend fun addLoginAttempt(attempt: LoginAttempt) {
         context.dataStore.edit { preferences ->
             val attempts = try {
-                // This will read the JSON string. If the key holds an old data type (like Int),
-                // it will throw a ClassCastException, which we catch.
                 val currentAttemptsJson = preferences[LOGIN_ATTEMPTS_KEY]
                 if (currentAttemptsJson != null) {
                     Json.decodeFromString<MutableList<LoginAttempt>>(currentAttemptsJson)
@@ -68,7 +65,6 @@ class UserStorage(private val context: Context) {
                     mutableListOf()
                 }
             } catch (e: Exception) {
-                // If we fail to read/decode (e.g., due to old data format), start with a fresh list.
                 mutableListOf()
             }
             attempts.add(attempt)
@@ -78,8 +74,6 @@ class UserStorage(private val context: Context) {
 
     val loginAttemptsFlow: Flow<List<LoginAttempt>> = context.dataStore.data.map { preferences ->
         try {
-            // This will read the JSON string. If the key holds an old data type (like Int),
-            // it will throw a ClassCastException, which we catch.
             val attemptsJson = preferences[LOGIN_ATTEMPTS_KEY]
             if (attemptsJson != null) {
                 Json.decodeFromString<List<LoginAttempt>>(attemptsJson)
@@ -87,7 +81,38 @@ class UserStorage(private val context: Context) {
                 emptyList()
             }
         } catch (e: Exception) {
-            // If we fail to read/decode (e.g., due to old data format), return an empty list.
+            emptyList()
+        }
+    }
+
+    // PRODUCTS
+
+    suspend fun saveProduct(product: Product) {
+        context.dataStore.edit { preferences ->
+            val products = try {
+                val currentProductsJson = preferences[PRODUCTS_KEY]
+                if (currentProductsJson != null) {
+                    Json.decodeFromString<MutableList<Product>>(currentProductsJson)
+                } else {
+                    mutableListOf()
+                }
+            } catch (e: Exception) {
+                mutableListOf()
+            }
+            products.add(product)
+            preferences[PRODUCTS_KEY] = Json.encodeToString(products)
+        }
+    }
+
+    val productsFlow: Flow<List<Product>> = context.dataStore.data.map { preferences ->
+        try {
+            val productsJson = preferences[PRODUCTS_KEY]
+            if (productsJson != null) {
+                Json.decodeFromString<List<Product>>(productsJson)
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
             emptyList()
         }
     }

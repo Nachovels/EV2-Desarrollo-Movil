@@ -24,7 +24,9 @@ import com.example.tcgstore.ui.home.HomeScreen
 import com.example.tcgstore.ui.login.LoginScreen
 import com.example.tcgstore.ui.registration.RegistroScreen
 import com.example.tcgstore.ui.registration.RegistroExitosoScreen
+import com.example.tcgstore.ui.store.StoreScreen
 import com.example.tcgstore.ui.theme.TCGStoreTheme
+import com.example.tcgstore.ui.welcome.WelcomeScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,6 +60,8 @@ fun AppNavigation(isDarkMode: Boolean, onThemeUpdated: (Boolean) -> Unit) {
         composable("login_attempts") { IntentoLoginScreen(navController = navController) }
         composable("registered_users") { UsuariosRegistradosScreen(navController = navController) }
         composable("add_product") { AgregarProductoScreen(navController = navController) }
+        composable("welcome") { WelcomeScreen(navController = navController) }
+        composable("store") { StoreScreen(navController = navController) }
         composable("config") {
             ConfigScreen(
                 navController = navController,

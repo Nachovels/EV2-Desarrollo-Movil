@@ -19,3 +19,11 @@ data class LoginAttempt(
     val success: Boolean,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Serializable
+data class Product(
+    val name: String,
+    val description: String,
+    val price: Int,
+    val imageUri: String
+)
