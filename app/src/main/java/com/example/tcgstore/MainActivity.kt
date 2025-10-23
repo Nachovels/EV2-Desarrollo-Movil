@@ -49,20 +49,46 @@ fun AppNavigation(isDarkMode: Boolean, onThemeUpdated: (Boolean) -> Unit) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home") {
         composable("home") { HomeScreen(navController = navController) }
-        composable("login") { LoginScreen(navController = navController) }
+        composable("login",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { LoginScreen(navController = navController) }
         composable(
             "register",
             enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
         ) { RegistroScreen(navController = navController) }
-        composable("registration_success") { RegistroExitosoScreen(navController = navController) }
-        composable("admin") { AdminScreen(navController = navController) }
-        composable("login_attempts") { IntentoLoginScreen(navController = navController) }
-        composable("registered_users") { UsuariosRegistradosScreen(navController = navController) }
-        composable("add_product") { AgregarProductoScreen(navController = navController) }
-        composable("welcome") { WelcomeScreen(navController = navController) }
-        composable("store") { StoreScreen(navController = navController) }
-        composable("config") {
+        composable("registration_success",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { RegistroExitosoScreen(navController = navController) }
+        composable("admin",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { AdminScreen(navController = navController) }
+        composable("login_attempts",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { IntentoLoginScreen(navController = navController) }
+        composable("registered_users",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { UsuariosRegistradosScreen(navController = navController) }
+        composable("add_product",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { AgregarProductoScreen(navController = navController) }
+        composable("welcome",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { WelcomeScreen(navController = navController) }
+        composable("store",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) { StoreScreen(navController = navController) }
+        composable("config",enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+        ) {
             ConfigScreen(
                 navController = navController,
                 isDarkMode = isDarkMode,
