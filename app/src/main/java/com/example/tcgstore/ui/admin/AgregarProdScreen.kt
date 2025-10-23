@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -73,7 +74,9 @@ fun AgregarProductoScreen(navController: NavController) {
                     modifier = Modifier.size(128.dp)
                 )
             }
-            Button(onClick = { imagePickerLauncher.launch("image/*") }) {
+            Button(onClick = { imagePickerLauncher.launch("image/*") },
+                shape = RoundedCornerShape(12.dp)
+            ) {
                 Text("Seleccionar Imagen")
             }
             OutlinedTextField(
@@ -91,7 +94,9 @@ fun AgregarProductoScreen(navController: NavController) {
                 onValueChange = { price = it },
                 label = { Text("Precio") }
             )
-            Button(onClick = { /* TODO: Save product */ }) {
+            Button(onClick = { /* TODO: Save product */ },
+                shape = RoundedCornerShape(12.dp)
+            ) {
                 Text("Guardar Producto")
             }
         }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
@@ -218,6 +219,7 @@ fun RegistroScreen(navController: NavController) {
                         navController.navigate("registration_success")
                     }
                  },
+                shape = RoundedCornerShape(12.dp),
                 enabled = !isNombreError && !isApellidoError && !isRutError && !isCorreoError && !isTelefonoError && !isContrasenaError && !isConfirmarContrasenaError &&
                         nombre.isNotEmpty() && apellido.isNotEmpty() && rut.isNotEmpty() && correo.isNotEmpty() && direccion.isNotEmpty() && telefono.isNotEmpty() && contrasena.isNotEmpty() && confirmarContrasena.isNotEmpty()
             ) {

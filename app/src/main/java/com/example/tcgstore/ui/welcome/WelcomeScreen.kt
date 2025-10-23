@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
@@ -46,27 +47,32 @@ fun WelcomeScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(onClick = { navController.navigate("store") }) {
+            Button(onClick = { navController.navigate("store") },
+                shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Ir a la tienda")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { /*Aqui se va a ver perfil*/ }) {
+            Button(onClick = { /*Aqui se va a ver perfil*/ },
+                shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Mi perfil")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { /*Aqui iria a pedidos*/ }) {
+            Button(onClick = { /*Aqui iria a pedidos*/ },
+                shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Mis pedidos")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { /*Aqui iria un carrito, todavia no se si ficticio o no*/ }) {
+            Button(onClick = { /*Aqui iria un carrito, todavia no se si ficticio o no*/ },
+                shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Carrito")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { navController.navigate("home") }) {
+            Button(onClick = { navController.navigate("home") },
+                shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Cerrar Sesión")
             }
         }
