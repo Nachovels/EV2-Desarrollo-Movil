@@ -3,7 +3,7 @@ package com.example.tcgstore.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class User(
+data class Usuario(
     val nombre: String,
     val apellido: String,
     val rut: String,
@@ -15,25 +15,25 @@ data class User(
 )
 
 @Serializable
-data class LoginAttempt(
+data class IntentoLogin(
     val correo: String,
-    val success: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
+    val exito: Boolean,
+    val horario: Long = System.currentTimeMillis()
 )
 
 @Serializable
-data class Product(
-    val name: String,
-    val description: String,
-    val price: Int,
+data class Producto(
+    val nombre: String,
+    val descripcion: String,
+    val precio: Int,
     val imageUri: String
 )
 
 @Serializable
-data class Order(
+data class Pedido(
     val id: String,
-    val date: String,
+    val fecha: String,
     val total: Double,
-    val status: String,
-    val items: List<Product>
+    val estado: String,
+    val productos: List<Producto>
 )

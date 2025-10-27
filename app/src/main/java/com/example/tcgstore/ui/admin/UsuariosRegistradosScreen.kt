@@ -29,7 +29,7 @@ import com.example.tcgstore.ui.registration.RegistroExitosoScreen
 fun UsuariosRegistradosScreen(navController: NavController) {
     val context = LocalContext.current
     val userStorage = UserStorage(context)
-    val usuarios by userStorage.usersFlow.collectAsState(initial = emptyList())
+    val usuarios by userStorage.usuariosFlow.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {

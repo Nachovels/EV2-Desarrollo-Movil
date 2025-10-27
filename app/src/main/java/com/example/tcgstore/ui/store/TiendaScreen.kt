@@ -1,5 +1,6 @@
 package com.example.tcgstore.ui.store
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,43 +29,46 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.tcgstore.R
-import com.example.tcgstore.data.Product
+import com.example.tcgstore.data.Producto
 import com.example.tcgstore.data.UserStorage
+import com.example.tcgstore.ui.cart.CarritoViewModel
+import com.example.tcgstore.ui.cart.CarritoViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StoreScreen(navController: NavController) {
+fun TiendaScreen(navController: NavController) {
     val context = LocalContext.current
     val userStorage = UserStorage(context)
-    val productsFromStorage by userStorage.productsFlow.collectAsState(initial = emptyList())
+    val carritoViewModel: CarritoViewModel = viewModel(factory = CarritoViewModelFactory(userStorage))
+    val productosAlmacenados by userStorage.productosFlow.collectAsState(initial = emptyList())
     val packageName = context.packageName
 
-    // Hardcoded product list using drawable resources
-    val hardcodedProducts = listOf(
-        Product(
-            name = "Magic The Gathering: Murders at Karlov Manor",
-            description = "Bundle con cartas Magic The Gathering: Murders at Karlov Manor.",
-            price = 78000,
+    val productosHardcodeados = listOf(
+        Producto(
+            nombre = "Magic The Gathering: Murders at Karlov Manor",
+            descripcion = "Bundle con cartas Magic The Gathering: Murders at Karlov Manor.",
+            precio = 78000,
             imageUri = "android.resource://$packageName/${R.drawable.x_magic_the_gathering_murders_at_karlov_manor_bundle8015}"
         ),
-        Product(
-            name = "One Piece: A Fist of Divine Speed Booster Box",
-            description = "Caja de cartas de One Piece edición A Fist of Divine Speed.",
-            price = 60000,
+        Producto(
+            nombre = "One Piece: A Fist of Divine Speed Booster Box",
+            descripcion = "Caja de cartas de One Piece edición A Fist of Divine Speed.",
+            precio = 60000,
             imageUri = "android.resource://$packageName/${R.drawable.x_op11_one_piece_a_fist_of_divine_speed_booster_box5231}"
         ),
-        Product(
-            name = "Pokémon Paradox Rift Bundle",
-            description = "Bundle de cartas Pokémon Paradox Rift.",
-            price = 40000,
+        Producto(
+            nombre = "Pokémon Paradox Rift Bundle",
+            descripcion = "Bundle de cartas Pokémon Paradox Rift.",
+            precio = 40000,
             imageUri = "android.resource://$packageName/${R.drawable.x_pkm_pr_etb_iv1709}"
         )
     )
 
-    val allProducts = productsFromStorage + hardcodedProducts
+    val todosProductos = productosAlmacenados + productosHardcodeados
 
     Scaffold(
         topBar = {
@@ -85,24 +89,27 @@ fun StoreScreen(navController: NavController) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(allProducts) { product ->
+            items(todosProductos) { producto ->
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column {
                         Image(
-                            painter = rememberAsyncImagePainter(product.imageUri),
-                            contentDescription = product.name,
+                            painter = rememberAsyncImagePainter(producto.imageUri),
+                            contentDescription = producto.nombre,
                             modifier = Modifier
-                                .height(150.dp)
+                                .height(300.dp)
                                 .fillMaxWidth(),
                             contentScale = ContentScale.Crop
                         )
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = product.name, fontWeight = FontWeight.Bold)
-                            Text(text = product.description)
-                            Text(text = "$${product.price}")
-                            Button(onClick = { /* TODO: Add to cart */ },
+                            Text(text = producto.nombre, fontWeight = FontWeight.Bold)
+                            Text(text = producto.descripcion)
+                            Text(text = "$${producto.precio}")
+                            Button(onClick = { 
+                                carritoViewModel.agregarAlCarrito(producto)
+                                Toast.makeText(context, "Añadido al carrito", Toast.LENGTH_SHORT).show()
+                            },
                                 shape = RoundedCornerShape(12.dp)) {
                                 Text("Agregar al carrito")
                             }

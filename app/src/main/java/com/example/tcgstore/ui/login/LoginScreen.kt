@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tcgstore.R
-import com.example.tcgstore.data.LoginAttempt
+import com.example.tcgstore.data.IntentoLogin
 import com.example.tcgstore.data.UserStorage
 import kotlinx.coroutines.launch
 
@@ -56,7 +56,7 @@ fun LoginScreen(navController: NavController){
     val context = LocalContext.current
     val userStorage = UserStorage(context)
     val scope = rememberCoroutineScope()
-    val usuarios by userStorage.usersFlow.collectAsState(initial = emptyList())
+    val usuarios by userStorage.usuariosFlow.collectAsState(initial = emptyList())
 
     var correo by remember { mutableStateOf("") }
     var contraseña by remember { mutableStateOf("") }
@@ -66,14 +66,6 @@ fun LoginScreen(navController: NavController){
     var isCorreoError by remember { mutableStateOf(false) }
     var isContraseñaError by remember { mutableStateOf(false) }
     var loginError by remember { mutableStateOf<String?>(null) }
-
-    fun validateCorreo(text: String) {
-        isCorreoError = !Patterns.EMAIL_ADDRESS.matcher(text).matches()
-    }
-
-    fun validateContraseña(text: String) {
-        isContraseñaError = text.length < 6
-    }
 
     Scaffold(
         topBar = {
@@ -106,18 +98,14 @@ fun LoginScreen(navController: NavController){
                 value = correo,
                 onValueChange = {
                     correo = it
-                    validateCorreo(it)
                     loginError = null
                 },
                 label = { Text("Correo") },
-                isError = isCorreoError,
-                supportingText = { if (isCorreoError)  Text("Correo inválido") else null }
             )
             OutlinedTextField(
                 value = contraseña,
                 onValueChange = {
                     contraseña = it
-                    validateContraseña(it)
                     loginError = null
                 },
                 label = { Text("Contraseña") },
@@ -140,16 +128,16 @@ fun LoginScreen(navController: NavController){
             Button(onClick = { 
                 scope.launch {
                     val isAdmin = correo == "admin@tcg.cl" && contraseña == "admin"
-                    val user = usuarios.find { it.correo == correo && it.contrasena == contraseña }
-                    val isUser = user != null
+                    val usuario = usuarios.find { it.correo == correo && it.contrasena == contraseña }
+                    val isUser = usuario != null
 
-                    val attempt = LoginAttempt(correo, success = isAdmin || isUser)
-                    userStorage.addLoginAttempt(attempt)
+                    val attempt = IntentoLogin(correo, exito = isAdmin || isUser)
+                    userStorage.agregarIntentoLogin(attempt)
 
                     if (isAdmin) {
                         navController.navigate("admin")
                     } else if (isUser) {
-                        user?.let { userStorage.saveLoggedInUserEmail(it.correo) }
+                        usuario?.let { userStorage.guardarEmailUsuarioLogueado(it.correo) }
                         navController.navigate("welcome")
                     } else {
                         loginError = "Correo o contraseña incorrectos"
@@ -162,7 +150,7 @@ fun LoginScreen(navController: NavController){
             ) {
                 Text("Iniciar Sesión")
             }
-            TextButton(onClick = { navController.navigate("register") }) {
+            TextButton(onClick = { navController.navigate("registro") }) {
                 Text("¿No tienes cuenta? Regístrate")
             }
         }

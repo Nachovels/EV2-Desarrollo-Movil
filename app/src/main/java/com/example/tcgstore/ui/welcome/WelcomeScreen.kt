@@ -42,25 +42,25 @@ fun WelcomeScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(onClick = { navController.navigate("store") },
+            Button(onClick = { navController.navigate("tienda") },
                 shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Ir a la tienda")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { navController.navigate("profile") },
+            Button(onClick = { navController.navigate("perfil") },
                 shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Mi perfil")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { navController.navigate("orders") },
+            Button(onClick = { navController.navigate("pedidos") },
                 shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Mis pedidos")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = { /*Aqui iria un carrito, todavia no se si ficticio o no*/ },
+            Button(onClick = { navController.navigate("carrito") },
                 shape = RoundedCornerShape(12.dp)) {
                 Text(text = "Carrito")
             }

@@ -51,7 +51,7 @@ fun HomeScreen(navController: NavController) {
                 Text(text = "Iniciar sesión", color = Color.White)
             }
             Button(
-                onClick = { navController.navigate("register") },
+                onClick = { navController.navigate("registro") },
                 modifier = Modifier.padding(top = 16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(12.dp)

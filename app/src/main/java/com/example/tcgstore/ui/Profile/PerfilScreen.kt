@@ -47,15 +47,15 @@ import com.example.tcgstore.ui.theme.TCGStoreTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun PerfilScreen(navController: NavController) {
     val context = LocalContext.current
     val userStorage = UserStorage(context)
 
-    val loggedInUserEmail by userStorage.loggedInUserEmailFlow.collectAsState(initial = null)
-    val users by userStorage.usersFlow.collectAsState(initial = emptyList())
+    val emailUsuarioLogueado by userStorage.emailUsuarioLogueadoFlow.collectAsState(initial = null)
+    val usuarios by userStorage.usuariosFlow.collectAsState(initial = emptyList())
 
-    val currentUser = loggedInUserEmail?.let { email ->
-        users.find { it.correo == email }
+    val usuarioActual = emailUsuarioLogueado?.let { correo ->
+        usuarios.find { it.correo == correo }
     }
 
     Scaffold(
@@ -74,7 +74,7 @@ fun ProfileScreen(navController: NavController) {
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-            if (currentUser != null) {
+            if (usuarioActual != null) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -84,7 +84,7 @@ fun ProfileScreen(navController: NavController) {
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    val imageUri = currentUser.photoUri?.let { Uri.parse(it) }
+                    val imageUri = usuarioActual.photoUri?.let { Uri.parse(it) }
                     val painter = if (imageUri != null) {
                         rememberAsyncImagePainter(model = imageUri)
                     } else {
@@ -101,16 +101,16 @@ fun ProfileScreen(navController: NavController) {
                             .background(Color.LightGray)
                     )
 
-                    ProfileInfoRow(label = "Nombre", value = currentUser.nombre)
-                    ProfileInfoRow(label = "Apellido", value = currentUser.apellido)
-                    ProfileInfoRow(label = "RUT", value = currentUser.rut)
-                    ProfileInfoRow(label = "Correo Electrónico", value = currentUser.correo)
-                    ProfileInfoRow(label = "Dirección", value = currentUser.direccion)
-                    ProfileInfoRow(label = "Teléfono", value = currentUser.telefono)
+                    ProfileInfoRow(label = "Nombre", value = usuarioActual.nombre)
+                    ProfileInfoRow(label = "Apellido", value = usuarioActual.apellido)
+                    ProfileInfoRow(label = "RUT", value = usuarioActual.rut)
+                    ProfileInfoRow(label = "Correo Electrónico", value = usuarioActual.correo)
+                    ProfileInfoRow(label = "Dirección", value = usuarioActual.direccion)
+                    ProfileInfoRow(label = "Teléfono", value = usuarioActual.telefono)
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    Button(onClick = { navController.navigate("editProfile") }) {
+                    Button(onClick = { navController.navigate("editarPerfil") }) {
                         Text("Editar Perfil")
                     }
                 }
@@ -143,8 +143,8 @@ private fun ProfileInfoRow(label: String, value: String) {
 
 @Preview(showBackground = true)
 @Composable
-fun ProfileScreenPreview() {
+fun PerfilScreenPreview() {
     TCGStoreTheme {
-        ProfileScreen(navController = rememberNavController())
+        PerfilScreen(navController = rememberNavController())
     }
 }

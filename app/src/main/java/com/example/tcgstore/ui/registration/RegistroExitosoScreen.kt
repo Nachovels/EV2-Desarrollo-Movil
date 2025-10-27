@@ -38,7 +38,7 @@ fun RegistroExitosoScreen(navController: NavController) {
 
 @Preview(showBackground = true)
 @Composable
-fun RegistrationSuccessScreenPreview() {
+fun RegistroExitosoScreenPreview() {
     com.example.tcgstore.ui.theme.TCGStoreTheme {
         RegistroExitosoScreen(rememberNavController())
     }

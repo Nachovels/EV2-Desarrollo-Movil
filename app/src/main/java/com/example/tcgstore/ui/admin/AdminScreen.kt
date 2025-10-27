@@ -27,17 +27,17 @@ fun AdminScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Button(onClick = { navController.navigate("login_attempts") },
+            Button(onClick = { navController.navigate("intentos_login") },
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Intentos de inicio de sesión")
             }
-            Button(onClick = { navController.navigate("registered_users") },
+            Button(onClick = { navController.navigate("usuarios_registrados") },
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Usuarios registrados")
             }
-            Button(onClick = { navController.navigate("add_product") },
+            Button(onClick = { navController.navigate("agregar_producto") },
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(text = "Agregar producto")

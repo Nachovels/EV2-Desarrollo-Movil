@@ -8,82 +8,103 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_prefs")
 
+@Serializable
+data class ItemCarrito(val producto: Producto, val cantidad: Int)
+
 class UserStorage(private val context: Context) {
 
     companion object {
-        val USERS_KEY = stringPreferencesKey("users")
-        val LOGIN_ATTEMPTS_KEY = stringPreferencesKey("login_attempts")
-        val PRODUCTS_KEY = stringPreferencesKey("products")
-        val LOGGED_IN_USER_EMAIL_KEY = stringPreferencesKey("logged_in_user_email")
+        val USERS_KEY = stringPreferencesKey("usuarios")
+        val LOGIN_ATTEMPTS_KEY = stringPreferencesKey("intento_login")
+        val PRODUCTS_KEY = stringPreferencesKey("productos")
+        val LOGGED_IN_USER_EMAIL_KEY = stringPreferencesKey("email_usuario_logueado")
+        val CART_KEY = stringPreferencesKey("carrito")
     }
 
-    // --- LOGGED IN USER ---
-
-    suspend fun saveLoggedInUserEmail(email: String) {
+    suspend fun guardarCarrito(carrito: List<ItemCarrito>) {
         context.dataStore.edit { preferences ->
-            preferences[LOGGED_IN_USER_EMAIL_KEY] = email
+            preferences[CART_KEY] = Json.encodeToString(carrito)
         }
     }
 
-    val loggedInUserEmailFlow: Flow<String?> = context.dataStore.data.map {
+    val carritoFlow: Flow<List<ItemCarrito>> = context.dataStore.data.map { preferences ->
+        try {
+            val cartJson = preferences[CART_KEY]
+            if (cartJson != null) {
+                Json.decodeFromString<List<ItemCarrito>>(cartJson)
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun vaciarCarrito() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(CART_KEY)
+        }
+    }
+
+    suspend fun guardarEmailUsuarioLogueado(correo: String) {
+        context.dataStore.edit { preferences ->
+            preferences[LOGGED_IN_USER_EMAIL_KEY] = correo
+        }
+    }
+
+    val emailUsuarioLogueadoFlow: Flow<String?> = context.dataStore.data.map {
         it[LOGGED_IN_USER_EMAIL_KEY]
     }
 
-    suspend fun clearLoggedInUser() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(LOGGED_IN_USER_EMAIL_KEY)
-        }
-    }
 
-    // --- USERS ---
-
-    suspend fun saveUser(user: User) {
+    suspend fun guardarUsuario(usuario: Usuario) {
         context.dataStore.edit { preferences ->
-            val users = try {
+            val usuarios = try {
                 val currentUsersJson = preferences[USERS_KEY]
                 if (currentUsersJson != null) {
-                    Json.decodeFromString<MutableList<User>>(currentUsersJson)
+                    Json.decodeFromString<MutableList<Usuario>>(currentUsersJson)
                 } else {
                     mutableListOf()
                 }
             } catch (e: Exception) {
                 mutableListOf()
             }
-            users.add(user)
-            preferences[USERS_KEY] = Json.encodeToString(users)
+            usuarios.add(usuario)
+            preferences[USERS_KEY] = Json.encodeToString(usuarios)
         }
     }
 
-    suspend fun updateUser(updatedUser: User) {
+    suspend fun actualizarUsuario(actualizarUsuario: Usuario) {
         context.dataStore.edit { preferences ->
-            val users = try {
+            val usuarios = try {
                 val currentUsersJson = preferences[USERS_KEY]
                 if (currentUsersJson != null) {
-                    Json.decodeFromString<MutableList<User>>(currentUsersJson)
+                    Json.decodeFromString<MutableList<Usuario>>(currentUsersJson)
                 } else {
                     return@edit
                 }
             } catch (e: Exception) {
                 return@edit
             }
-            val userIndex = users.indexOfFirst { it.correo == updatedUser.correo }
-            if (userIndex != -1) {
-                users[userIndex] = updatedUser
-                preferences[USERS_KEY] = Json.encodeToString(users)
+            val usuarioIndex = usuarios.indexOfFirst { it.correo == actualizarUsuario.correo }
+            if (usuarioIndex != -1) {
+                usuarios[usuarioIndex] = actualizarUsuario
+                preferences[USERS_KEY] = Json.encodeToString(usuarios)
             }
         }
     }
 
-    val usersFlow: Flow<List<User>> = context.dataStore.data.map { preferences ->
+    val usuariosFlow: Flow<List<Usuario>> = context.dataStore.data.map { preferences ->
         try {
             val usersJson = preferences[USERS_KEY]
             if (usersJson != null) {
-                Json.decodeFromString<List<User>>(usersJson)
+                Json.decodeFromString<List<Usuario>>(usersJson)
             } else {
                 emptyList()
             }
@@ -92,30 +113,29 @@ class UserStorage(private val context: Context) {
         }
     }
 
-    // LOGIN ATTEMPTS
 
-    suspend fun addLoginAttempt(attempt: LoginAttempt) {
+    suspend fun agregarIntentoLogin(intento: IntentoLogin) {
         context.dataStore.edit { preferences ->
             val attempts = try {
                 val currentAttemptsJson = preferences[LOGIN_ATTEMPTS_KEY]
                 if (currentAttemptsJson != null) {
-                    Json.decodeFromString<MutableList<LoginAttempt>>(currentAttemptsJson)
+                    Json.decodeFromString<MutableList<IntentoLogin>>(currentAttemptsJson)
                 } else {
                     mutableListOf()
                 }
             } catch (e: Exception) {
                 mutableListOf()
             }
-            attempts.add(attempt)
+            attempts.add(intento)
             preferences[LOGIN_ATTEMPTS_KEY] = Json.encodeToString(attempts)
         }
     }
 
-    val loginAttemptsFlow: Flow<List<LoginAttempt>> = context.dataStore.data.map { preferences ->
+    val intentoLoginFlow: Flow<List<IntentoLogin>> = context.dataStore.data.map { preferences ->
         try {
             val attemptsJson = preferences[LOGIN_ATTEMPTS_KEY]
             if (attemptsJson != null) {
-                Json.decodeFromString<List<LoginAttempt>>(attemptsJson)
+                Json.decodeFromString<List<IntentoLogin>>(attemptsJson)
             } else {
                 emptyList()
             }
@@ -124,30 +144,29 @@ class UserStorage(private val context: Context) {
         }
     }
 
-    // PRODUCTS
 
-    suspend fun saveProduct(product: Product) {
+    suspend fun guardarProducto(producto: Producto) {
         context.dataStore.edit { preferences ->
             val products = try {
                 val currentProductsJson = preferences[PRODUCTS_KEY]
                 if (currentProductsJson != null) {
-                    Json.decodeFromString<MutableList<Product>>(currentProductsJson)
+                    Json.decodeFromString<MutableList<Producto>>(currentProductsJson)
                 } else {
                     mutableListOf()
                 }
             } catch (e: Exception) {
                 mutableListOf()
             }
-            products.add(product)
+            products.add(producto)
             preferences[PRODUCTS_KEY] = Json.encodeToString(products)
         }
     }
 
-    val productsFlow: Flow<List<Product>> = context.dataStore.data.map { preferences ->
+    val productosFlow: Flow<List<Producto>> = context.dataStore.data.map { preferences ->
         try {
             val productsJson = preferences[PRODUCTS_KEY]
             if (productsJson != null) {
-                Json.decodeFromString<List<Product>>(productsJson)
+                Json.decodeFromString<List<Producto>>(productsJson)
             } else {
                 emptyList()
             }

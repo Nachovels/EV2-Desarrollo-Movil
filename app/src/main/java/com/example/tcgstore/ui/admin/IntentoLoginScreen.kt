@@ -29,7 +29,7 @@ import java.util.Locale
 fun IntentoLoginScreen(navController: NavController) {
     val context = LocalContext.current
     val userStorage = UserStorage(context)
-    val intentoLogin by userStorage.loginAttemptsFlow.collectAsState(initial = emptyList())
+    val intentoLogin by userStorage.intentoLoginFlow.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
@@ -49,8 +49,8 @@ fun IntentoLoginScreen(navController: NavController) {
                 .padding(it)
         ) {
             items(intentoLogin) { intento ->
-                val fecha = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date(intento.timestamp))
-                val estado = if (intento.success) "Exitoso" else "Fallido"
+                val fecha = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault()).format(Date(intento.horario))
+                val estado = if (intento.exito) "Exitoso" else "Fallido"
                 Column(modifier = Modifier.padding()) {
                     Text(text = "---------------------------------------------------------------------------------")
                     Text(text = "Correo: ${intento.correo}")
