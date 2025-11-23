@@ -25,7 +25,7 @@ object ValidationUtils {
     }
 
     fun isValidContrasena(contrasena: String): Boolean {
-        return contrasena.matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-]).{8,}$"))
+        return contrasena.matches(Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*[@$!%*?&._-]).{8,}$"))
     }
 
     fun contrasenasIguales(contrasena1: String, contrasena2: String): Boolean {

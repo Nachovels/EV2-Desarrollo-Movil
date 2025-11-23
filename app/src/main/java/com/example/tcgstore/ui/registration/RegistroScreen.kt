@@ -1,41 +1,26 @@
 package com.example.tcgstore.ui.registration
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.tcgstore.data.UserStorage
-import com.example.tcgstore.data.Usuario
+import com.example.tcgstore.data.repository.ApiResult
+import com.example.tcgstore.data.repository.AuthRepository
 import com.example.tcgstore.utils.ValidationUtils
 import kotlinx.coroutines.launch
 
@@ -43,26 +28,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun RegistroScreen(navController: NavController) {
     val context = LocalContext.current
-    val userStorage = UserStorage(context)
+    val authRepository = remember { AuthRepository(context) }
     val scope = rememberCoroutineScope()
 
-    var nombre by remember { mutableStateOf("") }
-    var apellido by remember { mutableStateOf("") }
-    var rut by remember { mutableStateOf("") }
+    var nombreCompleto by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
-    var direccion by remember { mutableStateOf("") }
-    var telefono by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
     var confirmarContrasena by remember { mutableStateOf("") }
     var contrasenaVisible by remember { mutableStateOf(false) }
 
     var isNombreError by remember { mutableStateOf(false) }
-    var isApellidoError by remember { mutableStateOf(false) }
-    var isRutError by remember { mutableStateOf(false) }
     var isCorreoError by remember { mutableStateOf(false) }
-    var isTelefonoError by remember { mutableStateOf(false) }
     var isContrasenaError by remember { mutableStateOf(false) }
     var isConfirmarContrasenaError by remember { mutableStateOf(false) }
+
+    var registroError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -75,82 +56,64 @@ fun RegistroScreen(navController: NavController) {
                 }
             )
         }
-    ) {
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .padding(16.dp),
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             OutlinedTextField(
-                value = nombre,
+                value = nombreCompleto,
                 onValueChange = {
-                    nombre = it
-                    isNombreError = !ValidationUtils.isValidNombre(it)
+                    nombreCompleto = it
+                    isNombreError = it.isNotBlank() && it.length < 3
+                    registroError = null
                 },
-                label = { Text("Nombre") },
+                label = { Text("Nombre Completo") },
+                enabled = !isLoading,
                 isError = isNombreError,
-                supportingText = { if (isNombreError) Text("El nombre no puede contener números") else null }
-            )
-            OutlinedTextField(
-                value = apellido,
-                onValueChange = {
-                    apellido = it
-                    isApellidoError = !ValidationUtils.isValidApellido(it)
+                supportingText = {
+                    if (isNombreError) Text("El nombre debe tener al menos 3 caracteres")
                 },
-                label = { Text("Apellido") },
-                isError = isApellidoError,
-                supportingText = { if (isApellidoError) Text("El apellido no puede contener números") else null }
+                modifier = Modifier.fillMaxWidth()
             )
-            OutlinedTextField(
-                value = rut,
-                onValueChange = {
-                    rut = it
-                    isRutError = !ValidationUtils.isValidRut(it)
-                },
-                label = { Text("RUT") },
-                isError = isRutError,
-                supportingText = { if (isRutError) Text("Formato de RUT no válido") else null }
-            )
+
             OutlinedTextField(
                 value = correo,
                 onValueChange = {
                     correo = it
-                    isCorreoError = !ValidationUtils.isValidCorreo(it)
+                    isCorreoError = it.isNotBlank() && !ValidationUtils.isValidCorreo(it)
+                    registroError = null
                 },
                 label = { Text("Correo electrónico") },
+                enabled = !isLoading,
                 isError = isCorreoError,
-                supportingText = { if (isCorreoError) Text("Formato de correo no válido") else null }
-            )
-            OutlinedTextField(
-                value = direccion,
-                onValueChange = { direccion = it },
-                label = { Text("Dirección") }
-            )
-
-            OutlinedTextField(
-                value = telefono,
-                onValueChange = { 
-                    telefono = it
-                    isTelefonoError = !ValidationUtils.isValidTelefono(it)
+                supportingText = {
+                    if (isCorreoError) Text("Formato de correo no válido")
                 },
-                label = { Text("Teléfono") },
-                isError = isTelefonoError,
-                supportingText = { if (isTelefonoError) Text("Formato de teléfono no válido") else null }
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = contrasena,
                 onValueChange = {
                     contrasena = it
-                    isContrasenaError = !ValidationUtils.isValidContrasena(it)
-                    isConfirmarContrasenaError = !ValidationUtils.contrasenasIguales(it, confirmarContrasena)
+                    isContrasenaError = it.isNotBlank() && !ValidationUtils.isValidContrasena(it)
+                    isConfirmarContrasenaError = confirmarContrasena.isNotBlank() &&
+                            !ValidationUtils.contrasenasIguales(it, confirmarContrasena)
+                    registroError = null
                 },
                 label = { Text("Contraseña") },
+                enabled = !isLoading,
                 isError = isContrasenaError,
-                supportingText = { if (isContrasenaError) Text("La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial") else null },
+                supportingText = {
+                    if (isContrasenaError) Text("Mínimo 8 caracteres, una mayúscula, una minúscula y un signo")
+                },
                 visualTransformation = if (contrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
@@ -159,51 +122,82 @@ fun RegistroScreen(navController: NavController) {
                     IconButton(onClick = { contrasenaVisible = !contrasenaVisible }) {
                         Icon(imageVector = image, contentDescription = description)
                     }
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = confirmarContrasena,
                 onValueChange = {
                     confirmarContrasena = it
-                    isConfirmarContrasenaError = !ValidationUtils.contrasenasIguales(contrasena, it)
+                    isConfirmarContrasenaError = it.isNotBlank() &&
+                            !ValidationUtils.contrasenasIguales(contrasena, it)
+                    registroError = null
                 },
                 label = { Text("Confirmar Contraseña") },
+                enabled = !isLoading,
                 isError = isConfirmarContrasenaError,
-                supportingText = { if (isConfirmarContrasenaError) Text("Las contraseñas no coinciden") else null },
+                supportingText = {
+                    if (isConfirmarContrasenaError) Text("Las contraseñas no coinciden")
+                },
                 visualTransformation = if (contrasenaVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    val image = if (contrasenaVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    val description = if (contrasenaVisible) "Ocultar contraseña" else "Mostrar contraseña"
-                    IconButton(onClick = { contrasenaVisible = !contrasenaVisible }) {
-                        Icon(imageVector = image, contentDescription = description)
-                    }
-                }
+                modifier = Modifier.fillMaxWidth()
             )
+
+            registroError?.let {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = {
                     scope.launch {
-                        val usuario = Usuario(nombre, apellido, rut, correo, direccion, telefono, contrasena)
-                        userStorage.guardarUsuario(usuario)
-                        navController.navigate("registro_exitoso")
+                        isLoading = true
+                        registroError = null
+
+                        when (val result = authRepository.register(
+                            nombreCompleto = nombreCompleto,
+                            correo = correo,
+                            password = contrasena,
+                            confirmarPassword = confirmarContrasena
+                        )) {
+                            is ApiResult.Success -> {
+                                isLoading = false
+                                navController.navigate("registro_exitoso") {
+                                    popUpTo("home") { inclusive = false }
+                                }
+                            }
+                            is ApiResult.Error -> {
+                                isLoading = false
+                                registroError = result.message
+                            }
+                            else -> {}
+                        }
                     }
-                 },
+                },
                 shape = RoundedCornerShape(12.dp),
-                enabled = !isNombreError && !isApellidoError && !isRutError && !isCorreoError && !isTelefonoError && !isContrasenaError && !isConfirmarContrasenaError &&
-                        nombre.isNotEmpty() && apellido.isNotEmpty() && rut.isNotEmpty() && correo.isNotEmpty() && direccion.isNotEmpty() && telefono.isNotEmpty() && contrasena.isNotEmpty() && confirmarContrasena.isNotEmpty()
+                enabled = !isLoading &&
+                        !isNombreError && !isCorreoError && !isContrasenaError && !isConfirmarContrasenaError &&
+                        nombreCompleto.isNotEmpty() && correo.isNotEmpty() &&
+                        contrasena.isNotEmpty() && confirmarContrasena.isNotEmpty(),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Registrarse")
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Registrarse")
+                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RegistroScreenPreview() {
-    com.example.tcgstore.ui.theme.TCGStoreTheme {
-        RegistroScreen(rememberNavController())
     }
 }
