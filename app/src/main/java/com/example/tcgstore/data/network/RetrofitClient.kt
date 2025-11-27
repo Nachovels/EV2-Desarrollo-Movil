@@ -30,11 +30,11 @@ object RetrofitClient {
 
     // Cliente para el backend de autenticación (puerto 8081)
     val authApiService: ApiService by lazy {
-        createApiService("http://10.0.2.2:8081/")
+        createApiService(ApiConstants.AUTH_BASE_URL)
     }
 
     // Cliente para el backend principal/de datos (puerto 8080)
     val mainApiService: ApiService by lazy {
-        createApiService("http://10.0.2.2:8080/")
+        createApiService(ApiConstants.MAIN_BASE_URL)
     }
 }

@@ -2,28 +2,15 @@ package com.example.tcgstore.ui.store
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -32,43 +19,47 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.tcgstore.R
 import com.example.tcgstore.data.Producto
 import com.example.tcgstore.data.UserStorage
+import com.example.tcgstore.data.network.ApiConstants
+import com.example.tcgstore.data.network.RetrofitClient
+import com.example.tcgstore.data.network.models.ProductResponse
+import com.example.tcgstore.data.repository.ApiResult
+import com.example.tcgstore.data.repository.ProductRepository
 import com.example.tcgstore.ui.cart.CarritoViewModel
 import com.example.tcgstore.ui.cart.CarritoViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TiendaScreen(navController: NavController) {
     val context = LocalContext.current
     val userStorage = UserStorage(context)
+    val productRepository = remember { ProductRepository(context) }
     val carritoViewModel: CarritoViewModel = viewModel(factory = CarritoViewModelFactory(userStorage))
-    val productosAlmacenados by userStorage.productosFlow.collectAsState(initial = emptyList())
-    val packageName = context.packageName
+    val scope = rememberCoroutineScope()
 
-    val productosHardcodeados = listOf(
-        Producto(
-            nombre = "Magic The Gathering: Murders at Karlov Manor",
-            descripcion = "Bundle con cartas Magic The Gathering: Murders at Karlov Manor.",
-            precio = 78000,
-            imageUri = "android.resource://$packageName/${R.drawable.x_magic_the_gathering_murders_at_karlov_manor_bundle8015}"
-        ),
-        Producto(
-            nombre = "One Piece: A Fist of Divine Speed Booster Box",
-            descripcion = "Caja de cartas de One Piece edición A Fist of Divine Speed.",
-            precio = 60000,
-            imageUri = "android.resource://$packageName/${R.drawable.x_op11_one_piece_a_fist_of_divine_speed_booster_box5231}"
-        ),
-        Producto(
-            nombre = "Pokémon Paradox Rift Bundle",
-            descripcion = "Bundle de cartas Pokémon Paradox Rift.",
-            precio = 40000,
-            imageUri = "android.resource://$packageName/${R.drawable.x_pkm_pr_etb_iv1709}"
-        )
-    )
+    var productos by remember { mutableStateOf<List<ProductResponse>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val todosProductos = productosAlmacenados + productosHardcodeados
+    // Cargar productos al iniciar
+    LaunchedEffect(Unit) {
+        scope.launch {
+            isLoading = true
+            when (val result = productRepository.getAllProducts()) {
+                is ApiResult.Success -> {
+                    productos = result.data
+                    isLoading = false
+                }
+                is ApiResult.Error -> {
+                    errorMessage = result.message
+                    isLoading = false
+                }
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -81,42 +72,172 @@ fun TiendaScreen(navController: NavController) {
                 }
             )
         }
-    ) {
-        LazyColumn(
+    ) { paddingValues ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(paddingValues)
         ) {
-            items(todosProductos) { producto ->
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column {
-                        Image(
-                            painter = rememberAsyncImagePainter(producto.imageUri),
-                            contentDescription = producto.nombre,
-                            modifier = Modifier
-                                .height(300.dp)
-                                .fillMaxWidth(),
-                            contentScale = ContentScale.Crop
+            when {
+                isLoading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                errorMessage != null -> {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Error al cargar productos",
+                            style = MaterialTheme.typography.titleMedium
                         )
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = producto.nombre, fontWeight = FontWeight.Bold)
-                            Text(text = producto.descripcion)
-                            Text(text = "$${producto.precio}")
-                            Button(onClick = { 
-                                carritoViewModel.agregarAlCarrito(producto)
-                                Toast.makeText(context, "Añadido al carrito", Toast.LENGTH_SHORT).show()
-                            },
-                                shape = RoundedCornerShape(12.dp)) {
-                                Text("Agregar al carrito")
+                        Text(
+                            text = errorMessage ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = {
+                            scope.launch {
+                                isLoading = true
+                                errorMessage = null
+                                when (val result = productRepository.getAllProducts()) {
+                                    is ApiResult.Success -> {
+                                        productos = result.data
+                                        isLoading = false
+                                    }
+                                    is ApiResult.Error -> {
+                                        errorMessage = result.message
+                                        isLoading = false
+                                    }
+                                    else -> {}
+                                }
                             }
+                        }) {
+                            Text("Reintentar")
+                        }
+                    }
+                }
+                productos.isEmpty() -> {
+                    Text(
+                        text = "No hay productos disponibles",
+                        modifier = Modifier.align(Alignment.Center),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(productos) { producto ->
+                            ProductCard(
+                                producto = producto,
+                                onAddToCart = {
+                                    val productoLocal = Producto(
+                                        nombre = producto.nombre,
+                                        descripcion = producto.descripcion,
+                                        precio = producto.precio,
+                                        imageUri = ApiConstants.getImageUrl(producto.imagen)
+                                    )
+                                    carritoViewModel.agregarAlCarrito(productoLocal)
+                                    Toast.makeText(context, "Añadido al carrito", Toast.LENGTH_SHORT).show()
+                                }
+                            )
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun ProductCard(
+    producto: ProductResponse,
+    onAddToCart: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column {
+            // Construir URL completa de la imagen
+            val imageUrl = "http://13.216.97.34:8080${producto.imagen}".replace("//uploads", "/uploads")
+
+            Image(
+                painter = rememberAsyncImagePainter(imageUrl),
+                contentDescription = producto.nombre,
+                modifier = Modifier
+                    .height(300.dp)
+                    .fillMaxWidth(),
+                contentScale = ContentScale.Crop
+            )
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = producto.nombre,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    producto.oferta?.let { oferta ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = oferta.uppercase(),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = producto.descripcion,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "$${String.format("%,d", producto.precio)}",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onAddToCart,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Agregar al carrito")
+                }
+            }
+        }
+    }
+}
+
+// Hacer BASE_URL accesible públicamente
+object RetrofitClient {
+    const val BASE_URL = "http://10.0.2.2:8080/"
 }

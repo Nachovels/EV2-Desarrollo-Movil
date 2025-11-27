@@ -8,7 +8,6 @@ import com.example.tcgstore.data.network.models.LoginRequest
 import com.example.tcgstore.data.network.models.RegisterRequest
 import com.example.tcgstore.data.network.models.AuthResponse
 import com.example.tcgstore.data.network.models.UserListResponse
-import com.example.tcgstore.data.network.models.UserProfileResponse
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +21,7 @@ sealed class ApiResult<out T> {
 
 class AuthRepository(private val context: Context) {
 
-    private val authApiService = RetrofitClient.authApiService
+    private val apiService = RetrofitClient.authApiService
     private val userStorage = UserStorage(context)
 
     // Guardar token en SharedPreferences
@@ -59,7 +58,7 @@ class AuthRepository(private val context: Context) {
                 confirmarPassword = confirmarPassword
             )
 
-            val response = authApiService.register(request)
+            val response = apiService.register(request)
 
             if (response.isSuccessful && response.body() != null) {
                 val authResponse = response.body()!!
@@ -87,7 +86,7 @@ class AuthRepository(private val context: Context) {
                 password = password
             )
 
-            val response = authApiService.login(request)
+            val response = apiService.login(request)
 
             if (response.isSuccessful && response.body() != null) {
                 val authResponse = response.body()!!
@@ -104,37 +103,15 @@ class AuthRepository(private val context: Context) {
         }
     }
 
-    // Obtener intentos de login
-    suspend fun getLoginAttempts(): ApiResult<List<IntentoLogin>> = withContext(Dispatchers.IO) {
-        try {
-            val token = getToken()
-            if (token == null) {
-                return@withContext ApiResult.Error("No hay sesión activa")
-            }
-
-            val response = authApiService.getLoginAttempts("Bearer $token")
-
-            if (response.isSuccessful && response.body() != null) {
-                ApiResult.Success(response.body()!!)
-            } else {
-                val errorBody = response.errorBody()?.string()
-                val errorMessage = parseErrorMessage(errorBody)
-                ApiResult.Error(errorMessage)
-            }
-        } catch (e: Exception) {
-            ApiResult.Error("Error de conexión: ${e.message}")
-        }
-    }
-
     // Obtener perfil de usuario
-    suspend fun getUserProfile(): ApiResult<UserProfileResponse> = withContext(Dispatchers.IO) {
+    suspend fun getUserProfile(): ApiResult<Any> = withContext(Dispatchers.IO) {
         try {
             val token = getToken()
             if (token == null) {
                 return@withContext ApiResult.Error("No hay sesión activa")
             }
 
-            val response = authApiService.getUserProfile("Bearer $token")
+            val response = apiService.getUserProfile("Bearer $token")
 
             if (response.isSuccessful && response.body() != null) {
                 ApiResult.Success(response.body()!!)
@@ -156,7 +133,51 @@ class AuthRepository(private val context: Context) {
                 return@withContext ApiResult.Error("No hay sesión activa")
             }
 
-            val response = authApiService.getAllUsers("Bearer $token")
+            val response = apiService.getAllUsers("Bearer $token")
+
+            if (response.isSuccessful && response.body() != null) {
+                ApiResult.Success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBody)
+                ApiResult.Error(errorMessage)
+            }
+        } catch (e: Exception) {
+            ApiResult.Error("Error de conexión: ${e.message}")
+        }
+    }
+
+    // Obtener intentos de login (solo admin)
+    suspend fun getLoginAttempts(): ApiResult<List<IntentoLogin>> = withContext(Dispatchers.IO) {
+        try {
+            val token = getToken()
+            if (token == null) {
+                return@withContext ApiResult.Error("No hay sesión activa")
+            }
+
+            val response = apiService.getLoginAttempts("Bearer $token")
+
+            if (response.isSuccessful && response.body() != null) {
+                ApiResult.Success(response.body()!!)
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = parseErrorMessage(errorBody)
+                ApiResult.Error(errorMessage)
+            }
+        } catch (e: Exception) {
+            ApiResult.Error("Error de conexión: ${e.message}")
+        }
+    }
+
+    // Eliminar usuario (solo admin)
+    suspend fun deleteUser(userId: Long): ApiResult<Map<String, String>> = withContext(Dispatchers.IO) {
+        try {
+            val token = getToken()
+            if (token == null) {
+                return@withContext ApiResult.Error("No hay sesión activa")
+            }
+
+            val response = apiService.deleteUser("Bearer $token", userId)
 
             if (response.isSuccessful && response.body() != null) {
                 ApiResult.Success(response.body()!!)

@@ -2,6 +2,8 @@ package com.example.tcgstore.data.network
 
 import com.example.tcgstore.data.IntentoLogin
 import com.example.tcgstore.data.network.models.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -58,4 +60,43 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") userId: Long
     ): Response<Map<String, String>>
+
+    // ============ PRODUCT ENDPOINTS ============
+
+    @GET("api/productos")
+    suspend fun getAllProducts(): Response<List<ProductResponse>>
+
+    @GET("api/productos/{id}")
+    suspend fun getProductById(
+        @Path("id") productId: Long
+    ): Response<ProductResponse>
+
+    @Multipart
+    @POST("api/productos/con-imagen")
+    suspend fun createProduct(
+        @Part("nombre") nombre: RequestBody,
+        @Part("descripcion") descripcion: RequestBody,
+        @Part("precio") precio: RequestBody,
+        @Part imagen: MultipartBody.Part,
+        @Part("oferta") oferta: RequestBody?,
+        @Part hover: MultipartBody.Part?
+    ): Response<ProductResponse>
+
+    @Multipart
+    @PUT("api/productos/{id}/con-imagen")
+    suspend fun updateProduct(
+        @Path("id") productId: Long,
+        @Part("nombre") nombre: RequestBody,
+        @Part("descripcion") descripcion: RequestBody,
+        @Part("precio") precio: RequestBody,
+        @Part("oferta") oferta: RequestBody?,
+        @Part imagen: MultipartBody.Part?,
+        @Part hover: MultipartBody.Part?
+    ): Response<ProductResponse>
+
+    @DELETE("api/productos/{id}")
+    suspend fun deleteProduct(
+        @Path("id") productId: Long
+    ): Response<Void>
+
 }

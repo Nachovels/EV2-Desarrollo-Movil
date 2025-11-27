@@ -1,27 +1,14 @@
 package com.example.tcgstore.ui.admin
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,16 +18,25 @@ import androidx.navigation.NavController
 import com.example.tcgstore.data.network.models.UserListResponse
 import com.example.tcgstore.data.repository.ApiResult
 import com.example.tcgstore.data.repository.AuthRepository
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsuariosRegistradosScreen(navController: NavController) {
     val context = LocalContext.current
     val authRepository = remember { AuthRepository(context) }
+    val scope = rememberCoroutineScope()
     var usersState by remember { mutableStateOf<ApiResult<List<UserListResponse>>>(ApiResult.Loading) }
 
+    fun loadUsers() {
+        scope.launch {
+            usersState = ApiResult.Loading
+            usersState = authRepository.getAllUsers()
+        }
+    }
+
     LaunchedEffect(Unit) {
-        usersState = authRepository.getAllUsers()
+        loadUsers()
     }
 
     Scaffold(
@@ -71,17 +67,49 @@ fun UsuariosRegistradosScreen(navController: NavController) {
                             modifier = Modifier.fillMaxSize()
                         ) {
                             items(usuarios) { usuario ->
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(text = "Nombre: ${usuario.nombreCompleto}", fontWeight = FontWeight.Bold)
-                                    Text(text = "Correo: ${usuario.correoElectronico}")
-                                    Divider(modifier = Modifier.padding(top = 16.dp))
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = "Nombre: ${usuario.nombreCompleto}", fontWeight = FontWeight.Bold)
+                                        Text(text = "Correo: ${usuario.correoElectronico}")
+                                        Text(text = "Rol: ${usuario.role}", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    IconButton(onClick = {
+                                        scope.launch {
+                                            val result = authRepository.deleteUser(usuario.id)
+                                            if (result is ApiResult.Success) {
+                                                Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
+                                                loadUsers() // Recargar lista
+                                            } else if (result is ApiResult.Error) {
+                                                Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Eliminar usuario",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
                                 }
+                                Divider()
                             }
                         }
                     }
                 }
                 is ApiResult.Error -> {
-                    Text(text = "Error: ${state.message}")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "Error: ${state.message}")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(onClick = { loadUsers() }) {
+                            Text("Reintentar")
+                        }
+                    }
                 }
                 is ApiResult.Loading -> {
                     CircularProgressIndicator()

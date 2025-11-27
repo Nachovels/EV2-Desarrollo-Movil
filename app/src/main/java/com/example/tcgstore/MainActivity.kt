@@ -20,6 +20,7 @@ import com.example.tcgstore.ui.admin.AgregarProductoScreen
 import com.example.tcgstore.ui.admin.AdminScreen
 import com.example.tcgstore.ui.admin.IntentoLoginScreen
 import com.example.tcgstore.ui.admin.UsuariosRegistradosScreen
+import com.example.tcgstore.ui.admin.EliminarProductoScreen
 import com.example.tcgstore.ui.cart.CarritoScreen
 import com.example.tcgstore.ui.configuration.ConfigScreen
 import com.example.tcgstore.ui.home.HomeScreen
@@ -108,6 +109,13 @@ fun AppNavigation(isDarkMode: Boolean, onThemeUpdated: (Boolean) -> Unit) {
             popEnterTransition = { slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(500)) },
             popExitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(500)) }
         ) { AgregarProductoScreen(navController = navController) }
+
+        composable("eliminar_producto",
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(500)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(500)) }
+        ) { EliminarProductoScreen(navController = navController) }
 
         composable("welcome",
             enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },

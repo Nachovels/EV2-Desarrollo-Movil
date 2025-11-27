@@ -42,6 +42,11 @@ fun AdminScreen(navController: NavController) {
             ) {
                 Text(text = "Agregar producto")
             }
+            Button(onClick = { navController.navigate("eliminar_producto") },
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(text = "Eliminar producto")
+            }
             Button(onClick = { navController.navigate("home") },
                 shape = RoundedCornerShape(12.dp)
             ) {

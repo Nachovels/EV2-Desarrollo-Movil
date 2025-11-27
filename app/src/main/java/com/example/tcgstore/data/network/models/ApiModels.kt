@@ -69,3 +69,29 @@ data class UserListResponse(
     val fechaRegistro: String,
     val enabled: Boolean
 )
+
+data class ProductResponse(
+    @SerializedName("id")
+    val id: Long,
+    @SerializedName("nombre")
+    val nombre: String,
+    @SerializedName("descripcion")
+    val descripcion: String,
+    @SerializedName("precio")
+    val precio: Int,
+    @SerializedName("imagen")
+    val imagen: String,
+    @SerializedName("hover")
+    val hover: String?,
+    @SerializedName("oferta")
+    val oferta: String?
+)
+
+data class BannerResponse(
+    @SerializedName("id")
+    val id: Long,
+    @SerializedName("url")
+    val url: String,
+    @SerializedName("titulo")
+    val titulo: String?
+)
