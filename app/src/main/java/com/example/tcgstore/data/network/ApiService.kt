@@ -1,5 +1,6 @@
 package com.example.tcgstore.data.network
 
+import com.example.tcgstore.data.IntentoLogin
 import com.example.tcgstore.data.network.models.*
 import retrofit2.Response
 import retrofit2.http.*
@@ -41,6 +42,11 @@ interface ApiService {
     suspend fun getAllUsers(
         @Header("Authorization") token: String
     ): Response<List<UserListResponse>>
+
+    @GET("api/admin/login-attempts")
+    suspend fun getLoginAttempts(
+        @Header("Authorization") token: String
+    ): Response<List<IntentoLogin>>
 
     @GET("api/admin/stats")
     suspend fun getAdminStats(
